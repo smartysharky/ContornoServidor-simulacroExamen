@@ -14,13 +14,6 @@ class FrontController {
                 }
                 , 'get');
 
-        Route::add('/demo-proveedores',
-                function () {
-                    $controlador = new \Com\Daw2\Controllers\InicioController();
-                    $controlador->demo();
-                }
-                , 'get');
-
         Route::add('/proveedores',
                 function () {
                     $controlador = new \Com\Daw2\Controllers\proveedoresController();

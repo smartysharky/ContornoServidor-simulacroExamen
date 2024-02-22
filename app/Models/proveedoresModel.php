@@ -7,6 +7,7 @@ namespace Com\Daw2\Models;
 class proveedoresModel extends \Com\Daw2\Core\BaseModel {
     
     const SELECT_FROM = "SELECT * FROM proveedor LEFT JOIN aux_tipo_proveedor ON aux_tipo_proveedor.id_tipo_proveedor = proveedor.id_tipo_proveedor LEFT JOIN aux_continente ON proveedor.id_continente = aux_continente.id_continente";
+    const ORDER_ARRAY = ['alias', 'nombre_completo', 'nombre_tipo_proveedor', 'nombre_continente', 'anho_fundacion'];
     
     function showAll() : array {
         $stmt = $this->pdo->query(self::SELECT_FROM);
@@ -67,14 +68,31 @@ class proveedoresModel extends \Com\Daw2\Core\BaseModel {
         
         $whereVars = $this->CalcFiltros($filtros);
         
+        $order = $this->getOrder($filtros);
+        $campoOrder = self::ORDER_ARRAY[abs($order) - 1];
+        
         if(empty($whereVars['condiciones'])){
-            $query = self::SELECT_FROM;
+            $query = self::SELECT_FROM . " order by $campoOrder " . $this->getSentido($order);
             return $this->pdo->query($query)->fetchAll();
         }
         else{
-            $query = self::SELECT_FROM . " WHERE ".implode(" AND ", $whereVars['condiciones']);
+            $query = self::SELECT_FROM . " WHERE ".implode(" AND ", $whereVars['condiciones']) . " order by $campoOrder " . $this->getSentido($order);
             
             return $this->executeQuery($query, $whereVars['vars']);
         }
+    }
+    
+    private function getSentido(int $order){
+        return ($order >= 0) ? 'asc' : 'desc';
+    }
+    
+    public function getOrder(array $filtros) : int{
+        if(!isset($filtros['order']) || abs($filtros['order']) < 1 || abs($filtros['order']) > count(self::ORDER_ARRAY)){
+            $order = 1;
+        }
+        else{
+            $order = (int)$filtros['order'];
+        }
+        return $order;
     }
 }
